@@ -1,4 +1,5 @@
-use std::{fmt, fs};
+use std::time::{Duration, Instant};
+use std::{fmt, fs, thread};
 
 const FONT_START: usize = 0x50;
 
@@ -109,13 +110,38 @@ impl Chip8 {
 
         Ok(())
     }
+
+    fn tick_timers(&mut self) {
+        if self.delay_timer > 0 {
+            self.delay_timer -= 1;
+        }
+        if self.sound_timer > 0 {
+            self.sound_timer -= 1;
+        }
+    }
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error + 'static>> {
     let rom = fs::read("roms/IBM.ch8")?;
     let mut chip8 = Chip8::new();
     chip8.load_rom(&rom)?;
-    println!("{chip8:?}");
 
-    Ok(())
+    let cycles_per_frame: u32 = 500 / 60;
+    let frame_duration = Duration::from_secs_f64(1.0 / 60.0);
+
+    loop {
+        let frame_start = Instant::now();
+        //handle_input()
+        for _ in 0..cycles_per_frame {
+            let opcode = chip8.fetch();
+            chip8.decode(opcode).map_err(|e| e.to_string())?;
+        }
+
+        chip8.tick_timers();
+
+        let elapsed = frame_start.elapsed();
+        if let Some(remaining) = frame_duration.checked_sub(elapsed) {
+            thread::sleep(remaining);
+        }
+    }
 }
