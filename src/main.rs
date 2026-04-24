@@ -86,6 +86,13 @@ impl Chip8 {
         self.memory[start..start + rom.len()].copy_from_slice(rom);
         Ok(())
     }
+
+    fn fetch(&mut self) -> u16 {
+        let hi = self.memory[self.program_counter as usize] as u16;
+        let lo = self.memory[self.program_counter as usize + 1] as u16;
+        self.program_counter += 2;
+        (hi << 8) | lo
+    }
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error + 'static>> {
