@@ -93,6 +93,22 @@ impl Chip8 {
         self.program_counter += 2;
         (hi << 8) | lo
     }
+
+    fn decode(&mut self, opcode: u16) -> Result<(), Chip8Error> {
+        let n1 = (opcode >> 12) & 0xF;
+        let n2 = (opcode >> 8) & 0xF;
+        let n3 = (opcode >> 4) & 0xF;
+        let n4 = opcode & 0xF;
+
+        let nnn = opcode & 0xFFF;
+        let kk = (opcode & 0xFF) as u8;
+
+        match (n1, n2, n3, n4) {
+            _ => return Err(Chip8Error::InvalidOpcode(opcode)),
+        }
+
+        Ok(())
+    }
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error + 'static>> {
