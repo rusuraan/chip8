@@ -1,8 +1,10 @@
 use thiserror::Error;
 
+pub const SCREEN_WIDTH: usize = 64;
+pub const SCREEN_HEIGHT: usize = 32;
+pub const TIMER_HZ: usize = 60;
+
 const MEMORY_BYTES: usize = 4096;
-const SCREEN_WIDTH: usize = 64;
-const SCREEN_HEIGHT: usize = 32;
 const REGISTER_COUNT: usize = 16;
 
 const PROGRAM_COUNTER_START_ADDRESS: usize = 0x200;
@@ -75,7 +77,7 @@ impl Chip8 {
             });
         }
 
-        self.memory[PROGRAM_COUNTER_START_ADDRESS..][..rom.len()].copy_from_slice(&rom);
+        self.memory[PROGRAM_COUNTER_START_ADDRESS..][..rom.len()].copy_from_slice(rom);
 
         Ok(())
     }

@@ -1,27 +1,61 @@
-use chip8::Chip8;
-use std::time::{Duration, Instant};
-use std::{fs, thread};
+use chip8::{self, Chip8};
+use minifb::{Key, Window, WindowOptions};
+use std::{
+    fs, process,
+    time::{Duration, Instant},
+};
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let rom = fs::read("roms/IBM.ch8")?;
+const WINDOW_NAME: &str = "CHIP-8";
+const OPCODE_HZ: usize = 600;
+const REFRESH_RATE: usize = 60;
+
+fn main() {
+    if let Err(e) = run() {
+        eprintln!("{e}");
+        process::exit(1);
+    }
+}
+
+fn run() -> Result<(), Box<dyn std::error::Error>> {
     let mut chip8 = Chip8::new();
+    let rom = fs::read("roms/IBM.ch8")?;
     chip8.load_rom(&rom)?;
 
-    let cycles_per_frame = 500 / 60;
-    let frame_duration = Duration::from_secs_f64(1.0 / 60.0);
+    let mut window = Window::new(
+        WINDOW_NAME,
+        chip8::SCREEN_WIDTH,
+        chip8::SCREEN_HEIGHT,
+        WindowOptions::default(),
+    )?;
 
-    loop {
-        let frame_start = Instant::now();
-        // handle_input()
+    let cpu_dt = Duration::from_secs_f64(1.0 / OPCODE_HZ as f64);
+    let timer_dt = Duration::from_secs_f64(1.0 / chip8::TIMER_HZ as f64);
 
-        for _ in 0..cycles_per_frame {
-            chip8.step().map_err(|e| e.to_string())?;
+    let mut cpu_acc = Duration::ZERO;
+    let mut timer_acc = Duration::ZERO;
+
+    let mut last = Instant::now();
+
+    while window.is_open() && !window.is_key_down(Key::Escape) {
+        let now = Instant::now();
+        let dt = now - last;
+        last = now;
+
+        cpu_acc += dt;
+        timer_acc += dt;
+
+        while cpu_acc >= cpu_dt {
+            chip8.step()?;
+            cpu_acc -= cpu_dt;
         }
 
-        chip8.tick_timers();
-
-        if let Some(remaining) = frame_duration.checked_sub(frame_start.elapsed()) {
-            thread::sleep(remaining);
+        while timer_acc >= timer_dt {
+            chip8.tick_timers();
+            timer_acc -= timer_dt;
         }
+
+        window.update();
     }
+
+    Ok(())
 }
