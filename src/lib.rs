@@ -122,6 +122,7 @@ impl Chip8 {
 
         match nibbles {
             (0x0, 0x0, 0xE, 0x0) => self.op_00e0(),
+            (0x1, _, _, _) => self.op_1nnn(nnn),
             (0x6, _, _, _) => self.op_6xnn(x, nn),
             (0x7, _, _, _) => self.op_7xnn(x, nn),
             (0xA, _, _, _) => self.op_annn(nnn),
@@ -132,6 +133,11 @@ impl Chip8 {
 
     fn op_00e0(&mut self) -> Result<()> {
         self.framebuffer.fill(false);
+        Ok(())
+    }
+
+    fn op_1nnn(&mut self, nnn: u16) -> Result<()> {
+        self.program_counter = nnn;
         Ok(())
     }
 
