@@ -28,6 +28,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         WindowOptions::default(),
     )?;
 
+    window.set_target_fps(REFRESH_RATE);
+
     let cpu_dt = Duration::from_secs_f64(1.0 / OPCODE_HZ as f64);
     let timer_dt = Duration::from_secs_f64(1.0 / chip8::TIMER_HZ as f64);
 
