@@ -113,30 +113,67 @@ impl Chip8 {
 
         let x = nibbles.1 as usize;
         let y = nibbles.2 as usize;
-        let n = nibbles.3 as u8;
+        let n = nibbles.3 as usize;
+
         let nn = (opcode & 0x00FF) as u8;
-        let nnn = (opcode & 0x0FFF) as u16;
+        let nnn = opcode & 0x0FFF;
+
+        println!("Executing opcode: {opcode:#06X}");
 
         match nibbles {
-            (0x0, 0x0, 0xE, 0x0) => self.op_00E0(),
-            (0x6, _, _, _) => self.op_6XNN(x, nn),
-            (0xA, _, _, _) => self.op_ANNN(nnn),
-            _ => return Err(Chip8Error::UnknownOpcode(opcode)),
+            (0x0, 0x0, 0xE, 0x0) => self.op_00e0(),
+            (0x6, _, _, _) => self.op_6xnn(x, nn),
+            (0xA, _, _, _) => self.op_annn(nnn),
+            (0xD, _, _, _) => self.op_dxyn(x, y, n),
+            _ => Err(Chip8Error::UnknownOpcode(opcode)),
         }
     }
 
-    fn op_00E0(&mut self) -> Result<()> {
+    fn op_00e0(&mut self) -> Result<()> {
         self.framebuffer.fill(false);
         Ok(())
     }
 
-    fn op_6XNN(&mut self, x: usize, nn: u8) -> Result<()> {
+    fn op_6xnn(&mut self, x: usize, nn: u8) -> Result<()> {
         self.registers[x] = nn;
         Ok(())
     }
 
-    fn op_ANNN(&mut self, nnn: u16) -> Result<()> {
+    fn op_annn(&mut self, nnn: u16) -> Result<()> {
         self.index_register = nnn;
+        Ok(())
+    }
+
+    fn op_dxyn(&mut self, x: usize, y: usize, n: usize) -> Result<()> {
+        let x_coord = self.registers[x] as usize % SCREEN_WIDTH;
+        let y_coord = self.registers[y] as usize % SCREEN_HEIGHT;
+        self.registers[0xF] = 0;
+
+        for row in 0..n {
+            let y_pos = y_coord + row;
+            if y_pos >= SCREEN_HEIGHT {
+                break;
+            }
+
+            let sprite_row = self.memory[(self.index_register as usize) + row];
+
+            for col in 0..8 {
+                let x_pos = x_coord + col;
+                if x_pos >= SCREEN_WIDTH {
+                    break;
+                }
+
+                if sprite_row & (0x80 >> col) != 0 {
+                    let idx = y_pos * SCREEN_WIDTH + x_pos;
+                    if self.framebuffer[idx] {
+                        self.registers[0xF] = 1;
+                    }
+
+                    self.framebuffer[idx] ^= true;
+                }
+            }
+        }
+
         Ok(())
     }
 }
