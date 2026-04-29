@@ -110,7 +110,7 @@ impl Chip8 {
             (opcode & 0x00F0) >> 4,
             (opcode & 0x000F),
         );
-        
+
         let x = nibbles.1 as usize;
         let y = nibbles.2 as usize;
         let n = nibbles.3 as u8;
