@@ -112,9 +112,13 @@ impl Chip8 {
         );
 
         match nibbles {
+            (0x0, 0x0, 0xE, 0x0) => self.op_00E0(),
             _ => return Err(Chip8Error::UnknownOpcode(opcode)),
         }
+    }
 
+    fn op_00E0(&mut self) -> Result<()> {
+        self.framebuffer.fill(false);
         Ok(())
     }
 }
