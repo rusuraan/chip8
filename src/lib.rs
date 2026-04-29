@@ -49,6 +49,7 @@ pub struct Chip8 {
     delay_timer: u8,
     sound_timer: u8,
     registers: [u8; REGISTER_COUNT],
+    draw_flag: bool,
 }
 
 impl Chip8 {
@@ -65,6 +66,7 @@ impl Chip8 {
             delay_timer: 0,
             sound_timer: 0,
             registers: [0; REGISTER_COUNT],
+            draw_flag: false,
         }
     }
 
@@ -89,6 +91,18 @@ impl Chip8 {
         if self.sound_timer > 0 {
             self.sound_timer -= 1;
         }
+    }
+
+    pub fn draw_flag(&self) -> bool {
+        self.draw_flag
+    }
+
+    pub fn clear_draw_flag(&mut self) {
+        self.draw_flag = false;
+    }
+
+    pub fn get_framebuffer(&self) -> &[bool; SCREEN_WIDTH * SCREEN_HEIGHT] {
+        &self.framebuffer
     }
 
     pub fn step(&mut self) -> Result<()> {
@@ -133,6 +147,7 @@ impl Chip8 {
 
     fn op_00e0(&mut self) -> Result<()> {
         self.framebuffer.fill(false);
+        self.draw_flag = true;
         Ok(())
     }
 
@@ -186,6 +201,7 @@ impl Chip8 {
             }
         }
 
+        self.draw_flag = true;
         Ok(())
     }
 }

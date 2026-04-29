@@ -16,6 +16,13 @@ fn main() {
     }
 }
 
+fn framebuffer_to_u32(framebuffer: &[bool]) -> Vec<u32> {
+    framebuffer
+        .iter()
+        .map(|&on| if on { 0x00FFFFFF } else { 0x00000000 })
+        .collect()
+}
+
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let mut chip8 = Chip8::new();
     let rom = fs::read("roms/IBM.ch8")?;
@@ -38,6 +45,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut last = Instant::now();
 
+    let mut buffer = framebuffer_to_u32(chip8.get_framebuffer());
     while window.is_open() && !window.is_key_down(Key::Escape) {
         let now = Instant::now();
         let dt = now - last;
@@ -56,7 +64,12 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             timer_acc -= timer_dt;
         }
 
-        window.update();
+        if chip8.draw_flag() {
+            buffer = framebuffer_to_u32(chip8.get_framebuffer());
+            chip8.clear_draw_flag();
+        }
+
+        window.update_with_buffer(&buffer, chip8::SCREEN_WIDTH, chip8::SCREEN_HEIGHT)?;
     }
 
     Ok(())
