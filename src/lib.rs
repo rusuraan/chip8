@@ -123,6 +123,7 @@ impl Chip8 {
         match nibbles {
             (0x0, 0x0, 0xE, 0x0) => self.op_00e0(),
             (0x6, _, _, _) => self.op_6xnn(x, nn),
+            (0x7, _, _, _) => self.op_7xnn(x, nn),
             (0xA, _, _, _) => self.op_annn(nnn),
             (0xD, _, _, _) => self.op_dxyn(x, y, n),
             _ => Err(Chip8Error::UnknownOpcode(opcode)),
@@ -136,6 +137,11 @@ impl Chip8 {
 
     fn op_6xnn(&mut self, x: usize, nn: u8) -> Result<()> {
         self.registers[x] = nn;
+        Ok(())
+    }
+
+    fn op_7xnn(&mut self, x: usize, nn: u8) -> Result<()> {
+        self.registers[x] = self.registers[x].wrapping_add(nn);
         Ok(())
     }
 
