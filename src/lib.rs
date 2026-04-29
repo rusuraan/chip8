@@ -110,15 +110,27 @@ impl Chip8 {
             (opcode & 0x00F0) >> 4,
             (opcode & 0x000F),
         );
+        
+        let x = nibbles.1;
+        let y = nibbles.2;
+        let n = nibbles.3;
+        let nn = opcode & 0x00FF;
+        let nnn = opcode & 0x0FFF;
 
         match nibbles {
             (0x0, 0x0, 0xE, 0x0) => self.op_00E0(),
+            (0xA, _, _, _) => self.op_ANNN(nnn),
             _ => return Err(Chip8Error::UnknownOpcode(opcode)),
         }
     }
 
     fn op_00E0(&mut self) -> Result<()> {
         self.framebuffer.fill(false);
+        Ok(())
+    }
+
+    fn op_ANNN(&mut self, nnn: u16) -> Result<()> {
+        self.index_register = nnn;
         Ok(())
     }
 }
