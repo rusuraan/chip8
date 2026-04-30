@@ -205,7 +205,7 @@ impl Chip8 {
         let vx = self.registers[x];
         let vy = self.registers[y];
         self.registers[0xF] = (vx >= vy) as u8;
-        self.registers[x] = vx.wrapping_add(vy);
+        self.registers[x] = vy.wrapping_sub(vx);
         Ok(())
     }
 
