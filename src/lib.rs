@@ -38,6 +38,9 @@ pub enum Chip8Error {
 
     #[error("unknown opcode: {0:#06X}")]
     UnknownOpcode(u16),
+
+    #[error("stack underflow")]
+    StackUnderflow,
 }
 
 pub struct Chip8 {
@@ -136,6 +139,7 @@ impl Chip8 {
 
         match nibbles {
             (0x0, 0x0, 0xE, 0x0) => self.op_00e0(),
+            (0x0, 0x0, 0xE, 0xE) => self.op_00ee(),
             (0x1, _, _, _) => self.op_1nnn(nnn),
             (0x2, _, _, _) => self.op_2nnn(nnn),
             (0x3, _, _, _) => self.op_3xnn(x, nn),
@@ -156,6 +160,11 @@ impl Chip8 {
     fn op_00e0(&mut self) -> Result<()> {
         self.framebuffer.fill(false);
         self.draw_flag = true;
+        Ok(())
+    }
+
+    fn op_00ee(&mut self) -> Result<()> {
+        self.program_counter = self.stack.pop().ok_or(Chip8Error::StackUnderflow)?;
         Ok(())
     }
 
