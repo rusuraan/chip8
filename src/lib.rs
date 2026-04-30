@@ -147,6 +147,7 @@ impl Chip8 {
             (0x5, _, _, 0x0) => self.op_5xy0(x, y),
             (0x6, _, _, _) => self.op_6xnn(x, nn),
             (0x7, _, _, _) => self.op_7xnn(x, nn),
+            (0x8, _, _, 0x0) => self.op_8xy0(x, y),
             (0x8, _, _, 0x5) => self.op_8xy5(x, y),
             (0x8, _, _, 0x7) => self.op_8xy7(x, y),
             (0x9, _, _, 0x0) => self.op_9xy0(x, y),
@@ -207,6 +208,11 @@ impl Chip8 {
 
     fn op_7xnn(&mut self, x: usize, nn: u8) -> Result<()> {
         self.registers[x] = self.registers[x].wrapping_add(nn);
+        Ok(())
+    }
+
+    fn op_8xy0(&mut self, x: usize, y: usize) -> Result<()> {
+        self.registers[x] = self.registers[y];
         Ok(())
     }
 
