@@ -144,6 +144,7 @@ impl Chip8 {
             (0x7, _, _, _) => self.op_7xnn(x, nn),
             (0x8, _, _, 0x5) => self.op_8xy5(x, y),
             (0x8, _, _, 0x7) => self.op_8xy7(x, y),
+            (0x9, _, _, 0x0) => self.op_9xy0(x, y),
             (0xA, _, _, _) => self.op_annn(nnn),
             (0xD, _, _, _) => self.op_dxyn(x, y, n),
             (0xF, _, 0x2, 0x9) => self.op_fx29(x),
@@ -206,6 +207,13 @@ impl Chip8 {
         let vy = self.registers[y];
         self.registers[0xF] = (vx >= vy) as u8;
         self.registers[x] = vy.wrapping_sub(vx);
+        Ok(())
+    }
+
+    fn op_9xy0(&mut self, x: usize, y: usize) -> Result<()> {
+        if self.registers[x] != self.registers[y] {
+            self.program_counter += 2;
+        }
         Ok(())
     }
 
