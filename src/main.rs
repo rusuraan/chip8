@@ -73,11 +73,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             chip8.clear_draw_flag();
         }
 
-        window.update_with_buffer(
-            &buffer,
-            chip8::SCREEN_WIDTH,
-            chip8::SCREEN_HEIGHT
-        )?;
+        window.update_with_buffer(&buffer, chip8::SCREEN_WIDTH, chip8::SCREEN_HEIGHT)?;
     }
 
     Ok(())
