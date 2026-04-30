@@ -146,6 +146,7 @@ impl Chip8 {
             (0x8, _, _, 0x7) => self.op_8xy7(x, y),
             (0xA, _, _, _) => self.op_annn(nnn),
             (0xD, _, _, _) => self.op_dxyn(x, y, n),
+            (0xF, _, 0x2, 0x9) => self.op_fx29(x),
             _ => Err(Chip8Error::UnknownOpcode(opcode)),
         }
     }
@@ -244,6 +245,11 @@ impl Chip8 {
         }
 
         self.draw_flag = true;
+        Ok(())
+    }
+
+    fn op_fx29(&mut self, x: usize) -> Result<()> {
+        self.index_register = FONTSET_START_ADDRESS as u16 + 5 * self.registers[x] as u16;
         Ok(())
     }
 }
