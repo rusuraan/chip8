@@ -1,5 +1,5 @@
 use chip8::{self, Chip8};
-use minifb::{Key, Window, WindowOptions};
+use minifb::{Key, Scale, Window, WindowOptions};
 use std::{
     fs, process,
     time::{Duration, Instant},
@@ -8,6 +8,7 @@ use std::{
 const WINDOW_NAME: &str = "CHIP-8";
 const OPCODE_HZ: usize = 600;
 const REFRESH_RATE: usize = 60;
+const WINDOW_SCALE: Scale = Scale::X16;
 
 fn main() {
     if let Err(e) = run() {
@@ -32,7 +33,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         WINDOW_NAME,
         chip8::SCREEN_WIDTH,
         chip8::SCREEN_HEIGHT,
-        WindowOptions::default(),
+        WindowOptions {
+            scale: WINDOW_SCALE,
+            ..Default::default()
+        },
     )?;
 
     window.set_target_fps(REFRESH_RATE);
@@ -69,7 +73,11 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             chip8.clear_draw_flag();
         }
 
-        window.update_with_buffer(&buffer, chip8::SCREEN_WIDTH, chip8::SCREEN_HEIGHT)?;
+        window.update_with_buffer(
+            &buffer,
+            chip8::SCREEN_WIDTH,
+            chip8::SCREEN_HEIGHT
+        )?;
     }
 
     Ok(())
