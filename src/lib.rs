@@ -138,6 +138,7 @@ impl Chip8 {
             (0x0, 0x0, 0xE, 0x0) => self.op_00e0(),
             (0x1, _, _, _) => self.op_1nnn(nnn),
             (0x3, _, _, _) => self.op_3xnn(x, nn),
+            (0x5, _, _, 0) => self.op_5xy0(x, y),
             (0x6, _, _, _) => self.op_6xnn(x, nn),
             (0x7, _, _, _) => self.op_7xnn(x, nn),
             (0xA, _, _, _) => self.op_annn(nnn),
@@ -159,6 +160,13 @@ impl Chip8 {
 
     fn op_3xnn(&mut self, x: usize, nn: u8) -> Result<()> {
         if self.registers[x] == nn {
+            self.program_counter += 2;
+        }
+        Ok(())
+    }
+
+    fn op_5xy0(&mut self, x: usize, y: usize) -> Result<()> {
+        if self.registers[x] == self.registers[y] {
             self.program_counter += 2;
         }
         Ok(())
