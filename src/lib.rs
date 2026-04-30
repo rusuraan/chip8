@@ -139,9 +139,10 @@ impl Chip8 {
             (0x1, _, _, _) => self.op_1nnn(nnn),
             (0x3, _, _, _) => self.op_3xnn(x, nn),
             (0x4, _, _, _) => self.op_4xnn(x, nn),
-            (0x5, _, _, 0) => self.op_5xy0(x, y),
+            (0x5, _, _, 0x0) => self.op_5xy0(x, y),
             (0x6, _, _, _) => self.op_6xnn(x, nn),
             (0x7, _, _, _) => self.op_7xnn(x, nn),
+            (0x8, _, _, 0x5) => self.op_8xy5(x, y),
             (0xA, _, _, _) => self.op_annn(nnn),
             (0xD, _, _, _) => self.op_dxyn(x, y, n),
             _ => Err(Chip8Error::UnknownOpcode(opcode)),
@@ -187,6 +188,14 @@ impl Chip8 {
 
     fn op_7xnn(&mut self, x: usize, nn: u8) -> Result<()> {
         self.registers[x] = self.registers[x].wrapping_add(nn);
+        Ok(())
+    }
+
+    fn op_8xy5(&mut self, x: usize, y: usize) -> Result<()> {
+        let vx = self.registers[x];
+        let vy = self.registers[y];
+        self.registers[0xF] = (vx >= vy) as u8;
+        self.registers[x] = vx.wrapping_sub(vy);
         Ok(())
     }
 
