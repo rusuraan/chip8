@@ -153,6 +153,7 @@ impl Chip8 {
             (0x8, _, _, 0x3) => self.op_8xy3(x, y),
             (0x8, _, _, 0x4) => self.op_8xy4(x, y),
             (0x8, _, _, 0x5) => self.op_8xy5(x, y),
+            (0x8, _, _, 0x6) => self.op_8xy6(x, y, false),
             (0x8, _, _, 0x7) => self.op_8xy7(x, y),
             (0x9, _, _, 0x0) => self.op_9xy0(x, y),
             (0xA, _, _, _) => self.op_annn(nnn),
@@ -246,6 +247,16 @@ impl Chip8 {
         let (result, overflow) = self.registers[x].overflowing_sub(self.registers[y]);
         self.registers[x] = result;
         self.registers[0xF] = !overflow as u8;
+        Ok(())
+    }
+
+    fn op_8xy6(&mut self, x: usize, y: usize, quirk: bool) -> Result<()> {
+        if !quirk {
+            self.registers[x] = self.registers[y];
+        }
+
+        self.registers[0xF] = self.registers[x] & 0x1;
+        self.registers[x] = self.registers[x] >> 1;
         Ok(())
     }
 
