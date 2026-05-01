@@ -169,6 +169,7 @@ impl Chip8 {
             (0xD, _, _, _) => self.op_dxyn(x, y, n),
             (0xF, _, 0x2, 0x9) => self.op_fx29(x),
             (0xF, _, 0x5, 0x5) => self.op_fx55(x),
+            (0xF, _, 0x6, 0x5) => self.op_fx65(x),
             _ => Err(Chip8Error::UnknownOpcode(opcode)),
         }
     }
@@ -338,12 +339,23 @@ impl Chip8 {
     }
 
     fn op_fx55(&mut self, x: usize) -> Result<()> {
-        for i in 0..x {
-            self.registers[i] = self.memory[self.index_register as usize + i];
-            if !self.quirk_config.load_store {
-                self.index_register += x as u16 + 1;
-            }
+        for i in 0..=x {
+            self.memory[self.index_register as usize + i] = self.registers[i];
         }
+        if !self.quirk_config.load_store {
+            self.index_register += x as u16 + 1;
+        }
+        Ok(())
+    }
+
+    fn op_fx65(&mut self, x: usize) -> Result<()> {
+        for i in 0..=x {
+            self.registers[i] = self.memory[self.index_register as usize + i];
+        }
+        if !self.quirk_config.load_store {
+            self.index_register += x as u16 + 1;
+        }
+        
         Ok(())
     }
 }
