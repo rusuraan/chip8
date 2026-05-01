@@ -355,7 +355,7 @@ impl Chip8 {
         if !self.quirk_config.load_store {
             self.index_register += x as u16 + 1;
         }
-        
+
         Ok(())
     }
 }

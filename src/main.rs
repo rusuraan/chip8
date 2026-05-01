@@ -6,7 +6,7 @@ use std::{
 };
 
 const WINDOW_NAME: &str = "CHIP-8";
-const OPCODE_HZ: usize = 600;
+const OPCODE_HZ: usize = 6;
 const REFRESH_RATE: usize = 60;
 const WINDOW_SCALE: Scale = Scale::X16;
 
@@ -26,7 +26,7 @@ fn framebuffer_to_u32(framebuffer: &[bool]) -> Vec<u32> {
 
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let mut chip8 = Chip8::new();
-    let rom = fs::read("roms/IBM.ch8")?;
+    let rom = fs::read("roms/test_opcode.ch8")?;
     chip8.load_rom(&rom)?;
 
     let mut window = Window::new(
