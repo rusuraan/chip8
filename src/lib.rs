@@ -43,6 +43,12 @@ pub enum Chip8Error {
     StackUnderflow,
 }
 
+#[derive(Default)]
+pub struct QuirkConfig {
+    shift_left: bool,
+    shift_right: bool,
+}
+
 pub struct Chip8 {
     memory: [u8; MEMORY_BYTES],
     framebuffer: [bool; SCREEN_WIDTH * SCREEN_HEIGHT],
@@ -52,6 +58,7 @@ pub struct Chip8 {
     delay_timer: u8,
     sound_timer: u8,
     registers: [u8; REGISTER_COUNT],
+    quirk_config: QuirkConfig,
     draw_flag: bool,
 }
 
@@ -69,6 +76,7 @@ impl Chip8 {
             delay_timer: 0,
             sound_timer: 0,
             registers: [0; REGISTER_COUNT],
+            quirk_config: Default::default(),
             draw_flag: false,
         }
     }
@@ -153,9 +161,9 @@ impl Chip8 {
             (0x8, _, _, 0x3) => self.op_8xy3(x, y),
             (0x8, _, _, 0x4) => self.op_8xy4(x, y),
             (0x8, _, _, 0x5) => self.op_8xy5(x, y),
-            (0x8, _, _, 0x6) => self.op_8xy6(x, y, false),
+            (0x8, _, _, 0x6) => self.op_8xy6(x, y),
             (0x8, _, _, 0x7) => self.op_8xy7(x, y),
-            (0x8, _, _, 0xE) => self.op_8xye(x, y, false),
+            (0x8, _, _, 0xE) => self.op_8xye(x, y),
             (0x9, _, _, 0x0) => self.op_9xy0(x, y),
             (0xA, _, _, _) => self.op_annn(nnn),
             (0xD, _, _, _) => self.op_dxyn(x, y, n),
@@ -251,8 +259,8 @@ impl Chip8 {
         Ok(())
     }
 
-    fn op_8xy6(&mut self, x: usize, y: usize, quirk: bool) -> Result<()> {
-        if !quirk {
+    fn op_8xy6(&mut self, x: usize, y: usize) -> Result<()> {
+        if !self.quirk_config.shift_right {
             self.registers[x] = self.registers[y];
         }
 
@@ -268,8 +276,8 @@ impl Chip8 {
         Ok(())
     }
 
-    fn op_8xye(&mut self, x: usize, y: usize, quirk: bool) -> Result<()> {
-        if !quirk {
+    fn op_8xye(&mut self, x: usize, y: usize) -> Result<()> {
+        if !self.quirk_config.shift_left {
             self.registers[x] = self.registers[y];
         }
         self.registers[0xF] = (self.registers[x] >> 7) & 0x1;
