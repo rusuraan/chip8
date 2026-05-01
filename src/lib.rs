@@ -265,7 +265,7 @@ impl Chip8 {
         }
 
         self.registers[0xF] = self.registers[x] & 0x1;
-        self.registers[x] = self.registers[x] >> 1;
+        self.registers[x] >>= 1;
         Ok(())
     }
 
@@ -281,7 +281,7 @@ impl Chip8 {
             self.registers[x] = self.registers[y];
         }
         self.registers[0xF] = (self.registers[x] >> 7) & 0x1;
-        self.registers[x] = self.registers[x] << 1;
+        self.registers[x] <<= 1;
         Ok(())
     }
 
