@@ -45,8 +45,8 @@ pub enum Chip8Error {
 
 #[derive(Default)]
 pub struct QuirkConfig {
-    shift_left: bool,
-    shift_right: bool,
+    shift: bool,
+    load_store: bool,
 }
 
 pub struct Chip8 {
@@ -168,6 +168,7 @@ impl Chip8 {
             (0xA, _, _, _) => self.op_annn(nnn),
             (0xD, _, _, _) => self.op_dxyn(x, y, n),
             (0xF, _, 0x2, 0x9) => self.op_fx29(x),
+            (0xF, _, 0x5, 0x5) => self.op_fx55(x),
             _ => Err(Chip8Error::UnknownOpcode(opcode)),
         }
     }
@@ -260,7 +261,7 @@ impl Chip8 {
     }
 
     fn op_8xy6(&mut self, x: usize, y: usize) -> Result<()> {
-        if !self.quirk_config.shift_right {
+        if !self.quirk_config.shift {
             self.registers[x] = self.registers[y];
         }
 
@@ -277,7 +278,7 @@ impl Chip8 {
     }
 
     fn op_8xye(&mut self, x: usize, y: usize) -> Result<()> {
-        if !self.quirk_config.shift_left {
+        if !self.quirk_config.shift {
             self.registers[x] = self.registers[y];
         }
         self.registers[0xF] = (self.registers[x] >> 7) & 0x1;
@@ -333,6 +334,16 @@ impl Chip8 {
 
     fn op_fx29(&mut self, x: usize) -> Result<()> {
         self.index_register = FONTSET_START_ADDRESS as u16 + 5 * self.registers[x] as u16;
+        Ok(())
+    }
+
+    fn op_fx55(&mut self, x: usize) -> Result<()> {
+        for i in 0..x {
+            self.registers[i] = self.memory[self.index_register as usize + i];
+            if !self.quirk_config.load_store {
+                self.index_register += x as u16 + 1;
+            }
+        }
         Ok(())
     }
 }
