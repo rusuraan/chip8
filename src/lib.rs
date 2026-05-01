@@ -151,6 +151,7 @@ impl Chip8 {
             (0x8, _, _, 0x1) => self.op_8xy1(x, y),
             (0x8, _, _, 0x2) => self.op_8xy2(x, y),
             (0x8, _, _, 0x3) => self.op_8xy3(x, y),
+            (0x8, _, _, 0x4) => self.op_8xy4(x, y),
             (0x8, _, _, 0x5) => self.op_8xy5(x, y),
             (0x8, _, _, 0x7) => self.op_8xy7(x, y),
             (0x9, _, _, 0x0) => self.op_9xy0(x, y),
@@ -234,19 +235,24 @@ impl Chip8 {
         Ok(())
     }
 
+    fn op_8xy4(&mut self, x: usize, y: usize) -> Result<()> {
+        let (result, overflow) = self.registers[x].overflowing_add(self.registers[y]);
+        self.registers[x] = result;
+        self.registers[0xF] = overflow as u8;
+        Ok(())
+    }
+
     fn op_8xy5(&mut self, x: usize, y: usize) -> Result<()> {
-        let vx = self.registers[x];
-        let vy = self.registers[y];
-        self.registers[0xF] = (vx >= vy) as u8;
-        self.registers[x] = vx.wrapping_sub(vy);
+        let (result, overflow) = self.registers[x].overflowing_sub(self.registers[y]);
+        self.registers[x] = result;
+        self.registers[0xF] = !overflow as u8;
         Ok(())
     }
 
     fn op_8xy7(&mut self, x: usize, y: usize) -> Result<()> {
-        let vx = self.registers[x];
-        let vy = self.registers[y];
-        self.registers[0xF] = (vx >= vy) as u8;
-        self.registers[x] = vy.wrapping_sub(vx);
+        let (result, overflow) = self.registers[y].overflowing_sub(self.registers[x]);
+        self.registers[x] = result;
+        self.registers[0xF] = !overflow as u8;
         Ok(())
     }
 
