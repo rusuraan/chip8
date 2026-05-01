@@ -45,8 +45,8 @@ pub enum Chip8Error {
 
 #[derive(Default)]
 pub struct QuirkConfig {
-    shift: bool,
-    load_store: bool,
+    pub shift: bool,
+    pub load_store: bool,
 }
 
 pub struct Chip8 {
@@ -64,6 +64,10 @@ pub struct Chip8 {
 
 impl Chip8 {
     pub fn new() -> Self {
+        Self::with_config(QuirkConfig::default())
+    }
+
+    pub fn with_config(quirk_config: QuirkConfig) -> Self {
         let mut memory = [0; MEMORY_BYTES];
         memory[FONTSET_START_ADDRESS..][..FONTSET.len()].copy_from_slice(&FONTSET);
 
@@ -76,7 +80,7 @@ impl Chip8 {
             delay_timer: 0,
             sound_timer: 0,
             registers: [0; REGISTER_COUNT],
-            quirk_config: Default::default(),
+            quirk_config,
             draw_flag: false,
         }
     }
