@@ -62,6 +62,12 @@ pub struct Chip8 {
     draw_flag: bool,
 }
 
+impl Default for Chip8 {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Chip8 {
     pub fn new() -> Self {
         Self::with_config(QuirkConfig::default())
