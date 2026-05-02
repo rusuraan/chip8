@@ -177,6 +177,7 @@ impl Chip8 {
             (0x9, _, _, 0x0) => self.op_9xy0(x, y),
             (0xA, _, _, _) => self.op_annn(nnn),
             (0xD, _, _, _) => self.op_dxyn(x, y, n),
+            (0xF, _, 0x1, 0xE) => self.op_fx1e(x),
             (0xF, _, 0x2, 0x9) => self.op_fx29(x),
             (0xF, _, 0x3, 0x3) => self.op_fx33(x),
             (0xF, _, 0x5, 0x5) => self.op_fx55(x),
@@ -341,6 +342,11 @@ impl Chip8 {
         }
 
         self.draw_flag = true;
+        Ok(())
+    }
+
+    fn op_fx1e(&mut self, x: usize) -> Result<()> {
+        self.index_register += self.registers[x] as u16;
         Ok(())
     }
 
