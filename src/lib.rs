@@ -6,6 +6,7 @@ pub const TIMER_HZ: usize = 60;
 
 const MEMORY_BYTES: usize = 4096;
 const REGISTER_COUNT: usize = 16;
+const KEY_COUNT: usize = 16;
 
 const PROGRAM_COUNTER_START_ADDRESS: usize = 0x200;
 
@@ -59,6 +60,7 @@ pub struct Chip8 {
     sound_timer: u8,
     registers: [u8; REGISTER_COUNT],
     quirk_config: QuirkConfig,
+    keypad: [bool; KEY_COUNT],
     draw_flag: bool,
 }
 
@@ -87,6 +89,7 @@ impl Chip8 {
             sound_timer: 0,
             registers: [0; REGISTER_COUNT],
             quirk_config,
+            keypad: [false; KEY_COUNT],
             draw_flag: false,
         }
     }
@@ -177,6 +180,8 @@ impl Chip8 {
             (0x9, _, _, 0x0) => self.op_9xy0(x, y),
             (0xA, _, _, _) => self.op_annn(nnn),
             (0xD, _, _, _) => self.op_dxyn(x, y, n),
+            (0xE, _, 0x9, 0xE) => self.op_ex9e(x),
+            (0xE, _, 0xA, 0x1) => self.op_exa1(x),
             (0xF, _, 0x0, 0x7) => self.op_fx07(x),
             (0xF, _, 0x1, 0x5) => self.op_fx15(x),
             (0xF, _, 0x1, 0xE) => self.op_fx1e(x),
@@ -347,6 +352,20 @@ impl Chip8 {
         }
 
         self.draw_flag = true;
+        Ok(())
+    }
+
+    fn op_ex9e(&mut self, x: usize) -> Result<()> {
+        if self.keypad[self.registers[x] as usize] {
+            self.program_counter += 2;
+        }
+        Ok(())
+    }
+
+    fn op_exa1(&mut self, x: usize) -> Result<()> {
+        if !self.keypad[self.registers[x] as usize] {
+            self.program_counter += 2;
+        }
         Ok(())
     }
 
