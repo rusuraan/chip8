@@ -62,6 +62,7 @@ pub struct Chip8 {
     registers: [u8; REGISTER_COUNT],
     quirk_config: QuirkConfig,
     keypad: [bool; KEY_COUNT],
+    last_keypad: [bool; KEY_COUNT],
     draw_flag: bool,
 }
 
@@ -91,6 +92,7 @@ impl Chip8 {
             registers: [0; REGISTER_COUNT],
             quirk_config,
             keypad: [false; KEY_COUNT],
+            last_keypad: [false; KEY_COUNT],
             draw_flag: false,
         }
     }
@@ -131,6 +133,7 @@ impl Chip8 {
     }
 
     pub fn set_keys(&mut self, keys: &[bool; 16]) {
+        self.last_keypad = self.keypad;
         self.keypad = *keys;
     }
 
@@ -188,6 +191,7 @@ impl Chip8 {
             (0xD, _, _, _) => self.op_dxyn(x, y, n),
             (0xE, _, 0x9, 0xE) => self.op_ex9e(x),
             (0xE, _, 0xA, 0x1) => self.op_exa1(x),
+            (0xF, _, 0x0, 0xA) => self.op_fx0a(x),
             (0xF, _, 0x0, 0x7) => self.op_fx07(x),
             (0xF, _, 0x1, 0x5) => self.op_fx15(x),
             (0xF, _, 0x1, 0xE) => self.op_fx1e(x),
@@ -383,6 +387,18 @@ impl Chip8 {
         if !self.keypad[self.registers[x] as usize] {
             self.program_counter += 2;
         }
+        Ok(())
+    }
+
+    fn op_fx0a(&mut self, x: usize) -> Result<()> {
+        for i in 0..KEY_COUNT {
+            if self.last_keypad[i] && !self.keypad[i] {
+                self.registers[x] = i as u8;
+                return Ok(());
+            }
+        }
+
+        self.program_counter -= 2;
         Ok(())
     }
 
