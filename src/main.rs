@@ -24,6 +24,28 @@ fn framebuffer_to_u32(framebuffer: &[bool]) -> Vec<u32> {
         .collect()
 }
 
+fn map_key(key: Key) -> Option<u8> {
+    match key {
+        Key::Key1 => Some(0x1),
+        Key::Key2 => Some(0x2),
+        Key::Key3 => Some(0x3),
+        Key::Key4 => Some(0xC),
+        Key::Q => Some(0x4),
+        Key::W => Some(0x5),
+        Key::E => Some(0x6),
+        Key::R => Some(0xD),
+        Key::A => Some(0x7),
+        Key::S => Some(0x8),
+        Key::D => Some(0x9),
+        Key::F => Some(0xE),
+        Key::Z => Some(0xA),
+        Key::X => Some(0x0),
+        Key::C => Some(0xB),
+        Key::V => Some(0xF),
+        _ => None,
+    }
+}
+
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let mut chip8 = Chip8::new();
     let rom = fs::read("roms/chip8-test-suite/5-quirks.ch8")?;
@@ -54,6 +76,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         let now = Instant::now();
         let dt = now - last;
         last = now;
+
+        let mut key_state = [false; 16];
+        for key in window.get_keys() {
+            if let Some(chip8_key) = map_key(key) {
+                key_state[chip8_key as usize] = true;
+            }
+        }
+        chip8.set_keys(&key_state);
 
         cpu_acc += dt;
         timer_acc += dt;

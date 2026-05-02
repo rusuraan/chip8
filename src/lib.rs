@@ -129,6 +129,10 @@ impl Chip8 {
         &self.framebuffer
     }
 
+    pub fn set_keys(&mut self, keys: &[bool; 16]) {
+        self.keypad = *keys;
+    }
+
     pub fn step(&mut self) -> Result<()> {
         let opcode = self.fetch();
         self.program_counter += 2;
