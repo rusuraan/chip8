@@ -278,8 +278,9 @@ impl Chip8 {
             self.registers[x] = self.registers[y];
         }
 
-        self.registers[0xF] = self.registers[x] & 0x1;
+        let shifted_bit = self.registers[x] & 0x1;
         self.registers[x] >>= 1;
+        self.registers[0xF] = shifted_bit;
         Ok(())
     }
 
@@ -294,8 +295,10 @@ impl Chip8 {
         if !self.quirk_config.shift {
             self.registers[x] = self.registers[y];
         }
-        self.registers[0xF] = (self.registers[x] >> 7) & 0x1;
+
+        let shifted_bit = (self.registers[x] >> 7) & 0x1;
         self.registers[x] <<= 1;
+        self.registers[0xF] = shifted_bit;
         Ok(())
     }
 
