@@ -48,6 +48,7 @@ pub enum Chip8Error {
 pub struct QuirkConfig {
     pub shift: bool,
     pub load_store: bool,
+    pub jumping: bool,
 }
 
 pub struct Chip8 {
@@ -183,6 +184,7 @@ impl Chip8 {
             (0x8, _, _, 0xE) => self.op_8xye(x, y),
             (0x9, _, _, 0x0) => self.op_9xy0(x, y),
             (0xA, _, _, _) => self.op_annn(nnn),
+            (0xB, _, _, _) => self.op_bnnn(nnn),
             (0xD, _, _, _) => self.op_dxyn(x, y, n),
             (0xE, _, 0x9, 0xE) => self.op_ex9e(x),
             (0xE, _, 0xA, 0x1) => self.op_exa1(x),
@@ -322,6 +324,17 @@ impl Chip8 {
 
     fn op_annn(&mut self, nnn: u16) -> Result<()> {
         self.index_register = nnn;
+        Ok(())
+    }
+
+    fn op_bnnn(&mut self, nnn: u16) -> Result<()> {
+        let base = if self.quirk_config.jumping {
+            let x = (nnn as usize & 0xF00) >> 8;
+            self.registers[x] as u16
+        } else {
+            self.registers[0] as u16
+        };
+        self.program_counter = nnn + base;
         Ok(())
     }
 
