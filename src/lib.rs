@@ -63,6 +63,7 @@ pub struct Chip8 {
     quirk_config: QuirkConfig,
     keypad: [bool; KEY_COUNT],
     last_keypad: [bool; KEY_COUNT],
+    waiting_vblank: bool,
     draw_flag: bool,
 }
 
@@ -93,6 +94,7 @@ impl Chip8 {
             quirk_config,
             keypad: [false; KEY_COUNT],
             last_keypad: [false; KEY_COUNT],
+            waiting_vblank: false,
             draw_flag: false,
         }
     }
@@ -112,6 +114,8 @@ impl Chip8 {
     }
 
     pub fn tick_timers(&mut self) {
+        self.waiting_vblank = false;
+
         if self.delay_timer > 0 {
             self.delay_timer -= 1;
         }
@@ -346,6 +350,12 @@ impl Chip8 {
     }
 
     fn op_dxyn(&mut self, x: usize, y: usize, n: usize) -> Result<()> {
+        if self.waiting_vblank {
+            self.program_counter -= 2;
+            return Ok(());
+        }
+        self.waiting_vblank = true;
+
         let x_coord = self.registers[x] as usize % SCREEN_WIDTH;
         let y_coord = self.registers[y] as usize % SCREEN_HEIGHT;
         self.registers[0xF] = 0;
