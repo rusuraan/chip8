@@ -263,16 +263,19 @@ impl Chip8 {
 
     fn op_8xy1(&mut self, x: usize, y: usize) -> Result<()> {
         self.registers[x] |= self.registers[y];
+        self.registers[0xF] = 0;
         Ok(())
     }
 
     fn op_8xy2(&mut self, x: usize, y: usize) -> Result<()> {
         self.registers[x] &= self.registers[y];
+        self.registers[0xF] = 0;
         Ok(())
     }
 
     fn op_8xy3(&mut self, x: usize, y: usize) -> Result<()> {
         self.registers[x] ^= self.registers[y];
+        self.registers[0xF] = 0;
         Ok(())
     }
 
