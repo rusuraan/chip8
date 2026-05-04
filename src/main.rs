@@ -1,5 +1,6 @@
 use chip8::{self, Chip8};
 use minifb::{Key, Scale, Window, WindowOptions};
+use rodio::source::{SineWave, Source};
 use std::{
     fs, process,
     time::{Duration, Instant},
@@ -7,8 +8,10 @@ use std::{
 
 const WINDOW_NAME: &str = "CHIP-8";
 const OPCODE_HZ: usize = 700;
+const BEEP_HZ: f32 = 440.0;
 const REFRESH_RATE: usize = 60;
 const WINDOW_SCALE: Scale = Scale::X16;
+const VOLUME: f32 = 0.2;
 
 fn main() {
     if let Err(e) = run() {
@@ -48,7 +51,7 @@ fn map_key(key: Key) -> Option<u8> {
 
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let mut chip8 = Chip8::new();
-    let rom = fs::read("roms/chip8-test-suite/5-quirks.ch8")?;
+    let rom = fs::read("roms/Pong.ch8")?;
     chip8.load_rom(&rom)?;
 
     let mut window = Window::new(
@@ -62,6 +65,12 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     )?;
 
     window.set_target_fps(REFRESH_RATE);
+
+    let sink_handle = rodio::DeviceSinkBuilder::open_default_sink()?;
+    let player = rodio::Player::connect_new(sink_handle.mixer());
+    let source = SineWave::new(BEEP_HZ).amplify(VOLUME);
+    player.append(source);
+    player.pause();
 
     let cpu_dt = Duration::from_secs_f64(1.0 / OPCODE_HZ as f64);
     let timer_dt = Duration::from_secs_f64(1.0 / chip8::TIMER_HZ as f64);
@@ -87,6 +96,12 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 
         cpu_acc += dt;
         timer_acc += dt;
+
+        if chip8.should_beep() {
+            player.play();
+        } else {
+            player.pause();
+        }
 
         while cpu_acc >= cpu_dt {
             chip8.step()?;

@@ -132,6 +132,10 @@ impl Chip8 {
         self.draw_flag = false;
     }
 
+    pub fn should_beep(&self) -> bool {
+        self.sound_timer > 0
+    }
+
     pub fn get_framebuffer(&self) -> &[bool; SCREEN_WIDTH * SCREEN_HEIGHT] {
         &self.framebuffer
     }
@@ -198,6 +202,7 @@ impl Chip8 {
             (0xF, _, 0x0, 0xA) => self.op_fx0a(x),
             (0xF, _, 0x0, 0x7) => self.op_fx07(x),
             (0xF, _, 0x1, 0x5) => self.op_fx15(x),
+            (0xF, _, 0x1, 0x8) => self.op_fx18(x),
             (0xF, _, 0x1, 0xE) => self.op_fx1e(x),
             (0xF, _, 0x2, 0x9) => self.op_fx29(x),
             (0xF, _, 0x3, 0x3) => self.op_fx33(x),
@@ -422,6 +427,11 @@ impl Chip8 {
 
     fn op_fx15(&mut self, x: usize) -> Result<()> {
         self.delay_timer = self.registers[x];
+        Ok(())
+    }
+
+    fn op_fx18(&mut self, x: usize) -> Result<()> {
+        self.sound_timer = self.registers[x];
         Ok(())
     }
 
