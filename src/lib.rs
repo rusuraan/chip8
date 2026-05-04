@@ -172,8 +172,6 @@ impl Chip8 {
         let nn = (opcode & 0x00FF) as u8;
         let nnn = opcode & 0x0FFF;
 
-        println!("Executing opcode: {opcode:#06X}");
-
         match nibbles {
             (0x0, 0x0, 0xE, 0x0) => self.op_00e0(),
             (0x0, 0x0, 0xE, 0xE) => self.op_00ee(),
