@@ -196,6 +196,7 @@ impl Chip8 {
             (0x9, _, _, 0x0) => self.op_9xy0(x, y),
             (0xA, _, _, _) => self.op_annn(nnn),
             (0xB, _, _, _) => self.op_bnnn(nnn),
+            (0xC, _, _, _) => self.op_cxnn(x, nn),
             (0xD, _, _, _) => self.op_dxyn(x, y, n),
             (0xE, _, 0x9, 0xE) => self.op_ex9e(x),
             (0xE, _, 0xA, 0x1) => self.op_exa1(x),
@@ -351,6 +352,12 @@ impl Chip8 {
             self.registers[0] as u16
         };
         self.program_counter = nnn + base;
+        Ok(())
+    }
+
+    fn op_cxnn(&mut self, x: usize, nn: u8) -> Result<()> {
+        let random_byte: u8 = rand::random();
+        self.registers[x] = random_byte & nn;
         Ok(())
     }
 
