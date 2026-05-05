@@ -3,7 +3,7 @@ A CHIP-8 interpreter written in Rust.
 
 ## Overview
 This project is organized as a Cargo workspace with two crates:
-- **`chip8-core`** - platform-agnostic emulator logic (CPU, memory, display, timers, opcode decoding)
+- **`chip8-core`** - platform-agnostic interpreter logic (CPU, memory, display, timers, opcode decoding)
 - **`chip8-desktop`** - desktop frontend using **`minifb`** (windowing/input) and **`rodio`** (audio)
 
 ## Structure
