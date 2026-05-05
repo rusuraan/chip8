@@ -1,4 +1,8 @@
-use thiserror::Error;
+mod error;
+
+pub use error::Chip8Error;
+
+use error::Result;
 
 pub const SCREEN_WIDTH: usize = 64;
 pub const SCREEN_HEIGHT: usize = 32;
@@ -29,20 +33,6 @@ const FONTSET: [u8; 80] = [
     0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
     0xF0, 0x80, 0xF0, 0x80, 0x80, // F
 ];
-
-type Result<T> = std::result::Result<T, Chip8Error>;
-
-#[derive(Debug, Error)]
-pub enum Chip8Error {
-    #[error("ROM too large: {rom_size} bytes exceeds available memory of {available} bytes")]
-    RomTooLarge { rom_size: usize, available: usize },
-
-    #[error("unknown opcode: {0:#06X}")]
-    UnknownOpcode(u16),
-
-    #[error("stack underflow")]
-    StackUnderflow,
-}
 
 #[derive(Default)]
 pub struct QuirkConfig {
