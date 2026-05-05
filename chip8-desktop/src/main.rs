@@ -1,4 +1,4 @@
-use chip8::{self, Chip8};
+use chip8_core::{self, Chip8};
 use minifb::{Key, Scale, Window, WindowOptions};
 use rodio::source::{SineWave, Source};
 use std::{
@@ -62,8 +62,8 @@ fn run(rom_path: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     let mut window = Window::new(
         WINDOW_NAME,
-        chip8::SCREEN_WIDTH,
-        chip8::SCREEN_HEIGHT,
+        chip8_core::SCREEN_WIDTH,
+        chip8_core::SCREEN_HEIGHT,
         WindowOptions {
             scale: WINDOW_SCALE,
             ..Default::default()
@@ -79,7 +79,7 @@ fn run(rom_path: &str) -> Result<(), Box<dyn std::error::Error>> {
     player.pause();
 
     let cpu_dt = Duration::from_secs_f64(1.0 / OPCODE_HZ as f64);
-    let timer_dt = Duration::from_secs_f64(1.0 / chip8::TIMER_HZ as f64);
+    let timer_dt = Duration::from_secs_f64(1.0 / chip8_core::TIMER_HZ as f64);
 
     let mut cpu_acc = Duration::ZERO;
     let mut timer_acc = Duration::ZERO;
@@ -92,7 +92,7 @@ fn run(rom_path: &str) -> Result<(), Box<dyn std::error::Error>> {
         let dt = now - last;
         last = now;
 
-        let mut key_state = [false; chip8::KEY_COUNT];
+        let mut key_state = [false; chip8_core::KEY_COUNT];
         for key in window.get_keys() {
             if let Some(chip8_key) = map_key(key) {
                 key_state[chip8_key as usize] = true;
@@ -123,7 +123,7 @@ fn run(rom_path: &str) -> Result<(), Box<dyn std::error::Error>> {
             buffer = framebuffer_to_u32(chip8.framebuffer());
         }
 
-        window.update_with_buffer(&buffer, chip8::SCREEN_WIDTH, chip8::SCREEN_HEIGHT)?;
+        window.update_with_buffer(&buffer, chip8_core::SCREEN_WIDTH, chip8_core::SCREEN_HEIGHT)?;
     }
 
     Ok(())
