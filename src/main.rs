@@ -14,7 +14,13 @@ const WINDOW_SCALE: Scale = Scale::X16;
 const VOLUME: f32 = 0.2;
 
 fn main() {
-    if let Err(e) = run() {
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() < 2 {
+        eprintln!("Usage: {} <rom>", args[0]);
+        process::exit(1);
+    }
+
+    if let Err(e) = run(&args[1]) {
         eprintln!("{e}");
         process::exit(1);
     }
@@ -49,9 +55,9 @@ fn map_key(key: Key) -> Option<u8> {
     }
 }
 
-fn run() -> Result<(), Box<dyn std::error::Error>> {
+fn run(rom_path: &str) -> Result<(), Box<dyn std::error::Error>> {
     let mut chip8 = Chip8::new();
-    let rom = fs::read("roms/Pong.ch8")?;
+    let rom = fs::read(rom_path)?;
     chip8.load_rom(&rom)?;
 
     let mut window = Window::new(
