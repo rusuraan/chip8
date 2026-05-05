@@ -1,5 +1,7 @@
+mod config;
 mod error;
 
+pub use config::QuirkConfig;
 pub use error::Chip8Error;
 
 use error::Result;
@@ -33,13 +35,6 @@ const FONTSET: [u8; 80] = [
     0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
     0xF0, 0x80, 0xF0, 0x80, 0x80, // F
 ];
-
-#[derive(Default)]
-pub struct QuirkConfig {
-    pub shift: bool,
-    pub load_store: bool,
-    pub jumping: bool,
-}
 
 pub struct Chip8 {
     memory: [u8; MEMORY_BYTES],
