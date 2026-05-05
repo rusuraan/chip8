@@ -86,13 +86,13 @@ fn run(rom_path: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     let mut last = Instant::now();
 
-    let mut buffer = framebuffer_to_u32(chip8.get_framebuffer());
+    let mut buffer = framebuffer_to_u32(chip8.framebuffer());
     while window.is_open() && !window.is_key_down(Key::Escape) {
         let now = Instant::now();
         let dt = now - last;
         last = now;
 
-        let mut key_state = [false; 16];
+        let mut key_state = [false; chip8::KEY_COUNT];
         for key in window.get_keys() {
             if let Some(chip8_key) = map_key(key) {
                 key_state[chip8_key as usize] = true;
@@ -119,9 +119,8 @@ fn run(rom_path: &str) -> Result<(), Box<dyn std::error::Error>> {
             timer_acc -= timer_dt;
         }
 
-        if chip8.draw_flag() {
-            buffer = framebuffer_to_u32(chip8.get_framebuffer());
-            chip8.clear_draw_flag();
+        if chip8.take_draw_flag() {
+            buffer = framebuffer_to_u32(chip8.framebuffer());
         }
 
         window.update_with_buffer(&buffer, chip8::SCREEN_WIDTH, chip8::SCREEN_HEIGHT)?;

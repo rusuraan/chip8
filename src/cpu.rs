@@ -6,9 +6,10 @@ use crate::{
     error::{Chip8Error, Result},
 };
 
+pub const KEY_COUNT: usize = 16;
+
 const MEMORY_BYTES: usize = 4096;
 const REGISTER_COUNT: usize = 16;
-const KEY_COUNT: usize = 16;
 const PROGRAM_COUNTER_START_ADDRESS: usize = 0x200;
 const FONTSET_START_ADDRESS: usize = 0x50; // Conventional start point of font data
 
@@ -101,23 +102,21 @@ impl Chip8 {
         }
     }
 
-    pub fn draw_flag(&self) -> bool {
-        self.draw_flag
-    }
-
-    pub fn clear_draw_flag(&mut self) {
+    pub fn take_draw_flag(&mut self) -> bool {
+        let flag = self.draw_flag;
         self.draw_flag = false;
+        flag
     }
 
     pub fn should_beep(&self) -> bool {
         self.sound_timer > 0
     }
 
-    pub fn get_framebuffer(&self) -> &[bool; SCREEN_WIDTH * SCREEN_HEIGHT] {
+    pub fn framebuffer(&self) -> &[bool] {
         &self.framebuffer
     }
 
-    pub fn set_keys(&mut self, keys: &[bool; 16]) {
+    pub fn set_keys(&mut self, keys: &[bool; KEY_COUNT]) {
         self.last_keypad = self.keypad;
         self.keypad = *keys;
     }

@@ -3,7 +3,7 @@ mod cpu;
 mod error;
 
 pub use config::QuirkConfig;
-pub use cpu::Chip8;
+pub use cpu::{Chip8, KEY_COUNT};
 pub use error::Chip8Error;
 
 pub const SCREEN_WIDTH: usize = 64;
