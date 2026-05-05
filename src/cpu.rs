@@ -1,14 +1,16 @@
+mod opcodes;
+
 use crate::{
     SCREEN_HEIGHT, SCREEN_WIDTH,
     config::QuirkConfig,
     error::{Chip8Error, Result},
 };
 
-pub(crate) const MEMORY_BYTES: usize = 4096;
-pub(crate) const REGISTER_COUNT: usize = 16;
-pub(crate) const KEY_COUNT: usize = 16;
-pub(crate) const PROGRAM_COUNTER_START_ADDRESS: usize = 0x200;
-pub(crate) const FONTSET_START_ADDRESS: usize = 0x50; // Conventional start point of font data
+const MEMORY_BYTES: usize = 4096;
+const REGISTER_COUNT: usize = 16;
+const KEY_COUNT: usize = 16;
+const PROGRAM_COUNTER_START_ADDRESS: usize = 0x200;
+const FONTSET_START_ADDRESS: usize = 0x50; // Conventional start point of font data
 
 const FONTSET: [u8; 80] = [
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -30,19 +32,19 @@ const FONTSET: [u8; 80] = [
 ];
 
 pub struct Chip8 {
-    pub(crate) memory: [u8; MEMORY_BYTES],
-    pub(crate) framebuffer: [bool; SCREEN_WIDTH * SCREEN_HEIGHT],
-    pub(crate) program_counter: u16,
-    pub(crate) index_register: u16,
-    pub(crate) stack: Vec<u16>,
-    pub(crate) delay_timer: u8,
-    pub(crate) sound_timer: u8,
-    pub(crate) registers: [u8; REGISTER_COUNT],
-    pub(crate) quirk_config: QuirkConfig,
-    pub(crate) keypad: [bool; KEY_COUNT],
-    pub(crate) last_keypad: [bool; KEY_COUNT],
-    pub(crate) waiting_vblank: bool,
-    pub(crate) draw_flag: bool,
+    memory: [u8; MEMORY_BYTES],
+    framebuffer: [bool; SCREEN_WIDTH * SCREEN_HEIGHT],
+    program_counter: u16,
+    index_register: u16,
+    stack: Vec<u16>,
+    delay_timer: u8,
+    sound_timer: u8,
+    registers: [u8; REGISTER_COUNT],
+    quirk_config: QuirkConfig,
+    keypad: [bool; KEY_COUNT],
+    last_keypad: [bool; KEY_COUNT],
+    waiting_vblank: bool,
+    draw_flag: bool,
 }
 
 impl Default for Chip8 {
@@ -126,13 +128,13 @@ impl Chip8 {
         self.execute(opcode)
     }
 
-    pub(crate) fn fetch(&self) -> u16 {
+    fn fetch(&self) -> u16 {
         let hi = self.memory[self.program_counter as usize] as u16;
         let lo = self.memory[(self.program_counter + 1) as usize] as u16;
         hi << 8 | lo
     }
 
-    pub(crate) fn execute(&mut self, opcode: u16) -> Result<()> {
+    fn execute(&mut self, opcode: u16) -> Result<()> {
         let nibbles = (
             (opcode & 0xF000) >> 12,
             (opcode & 0x0F00) >> 8,
@@ -149,7 +151,7 @@ impl Chip8 {
 
         match nibbles {
             (0x0, 0x0, 0xE, 0x0) => self.op_00e0(),
-            (0x0, 0x0, 0xE, 0xE) => self.op_00ee(),
+            (0x0, 0x0, 0xE, 0xE) => self.op_00ee()?,
             (0x1, _, _, _) => self.op_1nnn(nnn),
             (0x2, _, _, _) => self.op_2nnn(nnn),
             (0x3, _, _, _) => self.op_3xnn(x, nn),
@@ -170,10 +172,10 @@ impl Chip8 {
             (0xA, _, _, _) => self.op_annn(nnn),
             (0xB, _, _, _) => self.op_bnnn(nnn),
             (0xC, _, _, _) => self.op_cxnn(x, nn),
-            (0xD, _, _, _) => self.op_dxyn(x, y, n),
+            (0xD, _, _, _) => self.op_dxyn(x, y, n)?,
             (0xE, _, 0x9, 0xE) => self.op_ex9e(x),
             (0xE, _, 0xA, 0x1) => self.op_exa1(x),
-            (0xF, _, 0x0, 0xA) => self.op_fx0a(x),
+            (0xF, _, 0x0, 0xA) => self.op_fx0a(x)?,
             (0xF, _, 0x0, 0x7) => self.op_fx07(x),
             (0xF, _, 0x1, 0x5) => self.op_fx15(x),
             (0xF, _, 0x1, 0x8) => self.op_fx18(x),
@@ -182,7 +184,8 @@ impl Chip8 {
             (0xF, _, 0x3, 0x3) => self.op_fx33(x),
             (0xF, _, 0x5, 0x5) => self.op_fx55(x),
             (0xF, _, 0x6, 0x5) => self.op_fx65(x),
-            _ => Err(Chip8Error::UnknownOpcode(opcode)),
+            _ => return Err(Chip8Error::UnknownOpcode(opcode)),
         }
+        Ok(())
     }
 }

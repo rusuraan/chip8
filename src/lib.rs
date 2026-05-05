@@ -1,7 +1,6 @@
 mod config;
 mod cpu;
 mod error;
-mod opcodes;
 
 pub use config::QuirkConfig;
 pub use cpu::Chip8;
